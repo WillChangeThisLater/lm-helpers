@@ -4,25 +4,18 @@ This repository provides a collection of Bash helper functions designed to enhan
 
 [lm](https://github.com/WillChangeThisLater/lm)
 
-## Repository Structure
-
-```
-.
-├── gpt-helpers.sh
-└── prompt.sh
-```
-
-## Files Overview
+## Helpers
 
 ### `gpt-helpers.sh`
 
-This Bash script provides two primary functions:
-
 - **`describe-project`**:
-  - This function generates a directory tree and lists the contents of a repository. It uses the `tree` command to visually represent the file structure and `files-to-prompt` to display file contents for context.
+  - Generates a directory tree and lists the contents of a repository. It uses the `tree` command to visually represent the file structure and `files-to-prompt` (by Simon Willison) to display file contents for context.
 
 - **`site-summarize`**:
   - This function fetches and summarizes content from a specified webpage using `lynx` and `lm`. It's helpful for extracting and condensing relevant information from external sources.
+
+- **`run`**:
+  - This function runs a provided bash command
 
 **Usage**:
 

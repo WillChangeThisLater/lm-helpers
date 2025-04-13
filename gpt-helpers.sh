@@ -2,6 +2,11 @@
 
 set -euo pipefail
 
+scrape-links() {
+    # TODO: update this to use input from stdin
+    cat | llm -s "Extract the URLs. Only include full URL paths (leading with http or https)" --schema-multi "url string" | jq -r '.items[].url'
+}
+
 # Describe a project
 describe-project() {
     local directory=${1:-.}
@@ -48,6 +53,22 @@ site-summarize() {
     fi
 }
 
+run() {
+    if [ $# -eq 0 ]; then
+        echo "run requires input" >&2
+        exit 1
+    fi
+
+    set +euo >/dev/null
+    echo '```bash'
+    echo "> $@" 
+    /bin/bash -c "source ~/.bashrc; $@" 2>&1
+    echo '```'
+    set -euo >/dev/null
+}
+
+
+
 main() {
     if [ $# -eq 0 ]; then
         echo "Usage: $0 {describe-project|site-summarize} [arguments...]" >&2
@@ -64,9 +85,15 @@ main() {
         site-summarize)
             site-summarize "$@"
             ;;
+        run)
+            run "$@"
+            ;;
+        scrape-links)
+            scrape-links
+            ;;
         *)
             echo "Error: Invalid command '$command'" >&2
-            echo "Usage: $0 {describe-project|site-summarize} [arguments...]" >&2
+            echo "Usage: $0 {describe-project|site-summarize|run|scrape-links} [arguments...]" >&2
             exit 1
             ;;
     esac
