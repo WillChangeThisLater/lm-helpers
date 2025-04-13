@@ -2,6 +2,11 @@
 
 set -euo pipefail
 
+usage() {
+    echo "Usage: $0 {describe-project|site-summarize|run|scrape-links} [arguments...]" >&2
+    exit 1
+}
+
 scrape-links() {
     # TODO: update this to use input from stdin
     cat | llm -s "Extract the URLs. Only include full URL paths (leading with http or https)" --schema-multi "url string" | jq -r '.items[].url'
@@ -71,8 +76,7 @@ run() {
 
 main() {
     if [ $# -eq 0 ]; then
-        echo "Usage: $0 {describe-project|site-summarize} [arguments...]" >&2
-        exit 1
+        usage
     fi
     
     command="$1"
@@ -93,8 +97,7 @@ main() {
             ;;
         *)
             echo "Error: Invalid command '$command'" >&2
-            echo "Usage: $0 {describe-project|site-summarize|run|scrape-links} [arguments...]" >&2
-            exit 1
+            usage
             ;;
     esac
 }
