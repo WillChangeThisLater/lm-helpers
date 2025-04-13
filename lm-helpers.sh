@@ -3,17 +3,17 @@
 set -euo pipefail
 
 usage() {
-    echo "Usage: $0 {describe-project|site-summarize|run|scrape-links} [arguments...]" >&2
+    echo "Usage: $0 {describe|scrape-site|run|scrape-links} [arguments...]" >&2
     exit 1
 }
 
 scrape-links() {
-    # TODO: update this to use input from stdin
+    # TODO: handle utf-8 error when it occurs
     cat | llm -s "Extract the URLs. Only include full URL paths (leading with http or https)" --schema-multi "url string" | jq -r '.items[].url'
 }
 
 # Describe a project
-describe-project() {
+describe() {
     local directory=${1:-.}
     echo "Directory tree:"
     tree "$directory"
@@ -22,17 +22,16 @@ describe-project() {
     files-to-prompt "$directory"
 }
 
-# Summarize relevant content from a website
-site-summarize() {
+scrape-site() {
     local url=""
-    local prompt=""
+    local summarize=0
 
     # Parse arguments
     while [[ "$#" -gt 0 ]]; do
         case "$1" in
-            --prompt)
-                prompt="$2"
-                shift 2
+            --summarize)
+                summarize=1
+                shift
                 ;;
             *)
                 url="$1"
@@ -43,18 +42,15 @@ site-summarize() {
 
     # Check if the URL is provided
     if [ -z "$url" ]; then
-        echo "Error: Please provide a URL to summarize." >&2
+        echo "Error: Please provide a URL." >&2
         return 1
     fi
 
-    # Fetch and process the website content
-    website_content=$(lynx -dump "$url")
-
-    # Check if prompt is provided and format the input for 'lm'
-    if [ -n "$prompt" ]; then
-        lynx -dump "$url" | lm --cache --prompt "$prompt"
+    # if summarize is set, do an additional summarization step
+    if [ "$summarize" -eq 1 ]; then
+        lynx -dump "$url" | lm --cache --prompt "Summarize the following webpage content succinctly and clearly"
     else
-        lynx -dump "$url" | lm --cache
+        lynx -dump "$url"
     fi
 }
 
@@ -86,8 +82,8 @@ main() {
         describe-project)
             describe-project "$@"
             ;;
-        site-summarize)
-            site-summarize "$@"
+        scrape-site)
+            scrape-site "$@"
             ;;
         run)
             run "$@"
